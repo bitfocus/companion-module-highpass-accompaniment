@@ -1,34 +1,28 @@
 {
-  "name": "accompaniment",
-  "version": "1.0.0",
+  "name": "highpass-accompaniment",
+  "version": "1.0.1",
   "description": "Companion module for the AcCompaniment soundboard app",
   "main": "main.js",
-	"scripts": {
-		"build": "yarn companion-module-build",
-		"lint": "eslint .",
-		"format": "prettier --write .",
-		"test": "echo \"Error: no test specified\" && exit 1"
-	},
-  "keywords": [
-    "bitfocus-companion-module",
-    "soundboard",
-    "audio",
-    "cue",
-    "osc"
-  ],
+  "scripts": {
+    "build": "yarn companion-module-build",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "author": "Marcin Wardecki",
   "license": "MIT",
   "dependencies": {
-	"@companion-module/base": "^1.12.0",
-	"companion-module-utils": "^0.4.0",
+    "@companion-module/base": "^1.12.0",
+    "companion-module-utils": "^0.4.0",
     "ws": "^8.14.2"
   },
-	"devDependencies": {
-		"eslint": "^8.47.0",
-		"prettier": "^3.0.2",
-		"@companion-module/tools": "2.3.0"
-	},
-	"companion": {
-		"buildDir": "dist"
-	}
-} 
+  "devDependencies": {
+    "eslint": "^8.47.0",
+    "prettier": "^3.0.2",
+    "@companion-module/tools": "2.3.0"
+  },
+  "companion": {
+    "buildDir": "dist"
+  },
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
+}
