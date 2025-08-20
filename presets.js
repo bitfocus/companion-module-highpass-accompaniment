@@ -2,46 +2,47 @@ const { combineRgb } = require('@companion-module/base')
 
 function getPresetDefinitions(self) {
 	const presets = []
-	if (self.cues && self.cues.length > 0) {
-		self.cues.forEach((cue) => {
-			presets.push({
-				type: 'button',
-				category: 'Sound Cues',
-				name: `Play ${cue.name || cue.id}`,
-				style: {
-					text: `TOGGLE\n${cue.name || cue.id}`,
-					size: 'auto',
-					color: combineRgb(255, 255, 255),
-					bgcolor: combineRgb(0, 0, 0),
+
+	// Emit a number of presets that reference variables and cue numbers
+	const presetCount = Math.max(1, (self.cues && self.cues.length) || 20)
+	for (let i = 1; i <= presetCount; i++) {
+		presets.push({
+			type: 'button',
+			category: 'Sound Cues',
+			name: `Toggle Cue ${i}`,
+			style: {
+				text: `TOGGLE\n$(instance:cue_${i}_name)`,
+				size: 'auto',
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(0, 0, 0),
+			},
+			steps: [
+				{
+					down: [
+						{
+							actionId: `toggle_cue`,
+							options: { cueNumber: `${i}` },
+						},
+					],
+					up: [],
 				},
-				steps: [
-					{
-						down: [
-							{
-								actionId: `toggle_cue_${cue.id}`,
-								options: {},
-							},
-						],
-						up: [],
+			],
+			feedbacks: [
+				{
+					feedbackId: 'cue_is_playing',
+					options: { cueNumber: `${i}` },
+					style: {
+						bgcolor: combineRgb(0, 160, 0),
 					},
-				],
-				feedbacks: [
-					{
-						feedbackId: 'cue_is_playing',
-						options: { cueId: cue.id },
-						style: {
-							bgcolor: combineRgb(0, 160, 0),
-						},
+				},
+				{
+					feedbackId: 'cue_is_paused',
+					options: { cueNumber: `${i}` },
+					style: {
+						bgcolor: combineRgb(255, 165, 0),
 					},
-					{
-						feedbackId: 'cue_is_paused',
-						options: { cueId: cue.id },
-						style: {
-							bgcolor: combineRgb(255, 165, 0),
-						},
-					},
-				],
-			})
+				},
+			],
 		})
 	}
 

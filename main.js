@@ -2,9 +2,9 @@ const { InstanceBase, InstanceStatus, runEntrypoint } = require('@companion-modu
 const WebSocket = require('ws')
 const { getConfigFields } = require('./config.js') // Import from config.js
 const { getActionDefinitions } = require('./actions.js') // Import from actions.js
-const { getVariableDefinitions, updateVariablesForCue } = require('./variables.js') // Import from variables.js
+const { getVariableDefinitions, getVariableDefinitionsDynamic, updateVariablesForCue } = require('./variables.js') // Import from variables.js
 
-const MAX_CUES_FOR_VARIABLES = 20 // Define how many individual cues we'll create variables for
+const MAX_CUES_FOR_VARIABLES = 20 // Legacy default for initial grid; dynamic defs will supersede on cue list
 
 class SoundboardInstance extends InstanceBase {
 	constructor(internal) {
@@ -14,6 +14,7 @@ class SoundboardInstance extends InstanceBase {
 		this.reconnectInterval = null
 		this.currentlyPlayingCueId = null // Track which cue is considered "currently playing"
 		this.cuePlayStates = {} // cueId: 'playing' | 'paused' | 'stopped'
+		this.cueStartTimestamps = {} // cueId: number (ms since epoch)
 	}
 
 	async init(config) {
@@ -91,39 +92,15 @@ class SoundboardInstance extends InstanceBase {
 					this.log('info', `Received ${this.cues.length} cues from acCompaniment.`)
 					this.initActions()
 					this.initPresets()
-					// this.checkFeedbacks(); // Consider if feedbacks need update based on cue list
-
-					// Update variable names for the first MAX_CUES_FOR_VARIABLES
-					const cueNameUpdates = {}
-					for (let i = 0; i < MAX_CUES_FOR_VARIABLES; i++) {
+					// Rebuild variable definitions to match the live cue list
+					const { definitions, initialValues } = getVariableDefinitionsDynamic(this.cues.length)
+					this.setVariableDefinitions(definitions)
+					// Initialize names from the list
+					for (let i = 0; i < this.cues.length; i++) {
 						const prefix = `cue_${i + 1}`
-						if (this.cues[i]) {
-							cueNameUpdates[`${prefix}_name`] = this.cues[i].name || `Cue ${i + 1}`
-							// When cue list updates, reset other specific cue variables to default unless a specific update comes
-							cueNameUpdates[`${prefix}_status`] = 'stopped'
-							cueNameUpdates[`${prefix}_playlist_item_name`] = ''
-							cueNameUpdates[`${prefix}_time_formatted`] = '00:00'
-							cueNameUpdates[`${prefix}_duration_formatted`] = '00:00'
-							cueNameUpdates[`${prefix}_remaining_formatted`] = '00:00'
-							cueNameUpdates[`${prefix}_time_sec`] = 0
-							cueNameUpdates[`${prefix}_duration_sec`] = 0
-							cueNameUpdates[`${prefix}_remaining_sec`] = 0
-						} else {
-							// If fewer cues than MAX_CUES_FOR_VARIABLES, set unused variable slots to N/A
-							cueNameUpdates[`${prefix}_name`] = 'N/A'
-							cueNameUpdates[`${prefix}_status`] = 'stopped'
-							cueNameUpdates[`${prefix}_playlist_item_name`] = ''
-							cueNameUpdates[`${prefix}_time_formatted`] = '00:00'
-							cueNameUpdates[`${prefix}_duration_formatted`] = '00:00'
-							cueNameUpdates[`${prefix}_remaining_formatted`] = '00:00'
-							cueNameUpdates[`${prefix}_time_sec`] = 0
-							cueNameUpdates[`${prefix}_duration_sec`] = 0
-							cueNameUpdates[`${prefix}_remaining_sec`] = 0
-						}
+						initialValues[`${prefix}_name`] = this.cues[i].name || `Cue ${i + 1}`
 					}
-					if (Object.keys(cueNameUpdates).length > 0) {
-						this.setVariableValues(cueNameUpdates)
-					}
+					this.setVariableValues(initialValues)
 					// It's possible the currentlyPlayingCueId is no longer valid, clear it if so
 					if (this.currentlyPlayingCueId && !this.cues.find((c) => c.id === this.currentlyPlayingCueId)) {
 						this.currentlyPlayingCueId = null
@@ -148,19 +125,48 @@ class SoundboardInstance extends InstanceBase {
 					// this.cuePlayStates[cueId] = status; // Old way
 					// this.checkFeedbacks(...); // Old way based on cue_playing_status_cueId
 				} else if (message.type === 'playbackTimeUpdate' && message.data) {
-					updateVariablesForCue(this, message.data) // Call imported function, passing 'this'
-
-					// Update cuePlayStates for feedbacks
+					// Determine transitions and update current-cue semantics
 					const { cueId, status } = message.data
+					let oldStatus
 					if (cueId && status) {
-						const oldStatus = this.cuePlayStates[cueId]
+						oldStatus = this.cuePlayStates[cueId]
+						const setAsCurrentNow = status === 'playing' && oldStatus !== 'playing'
+						if (setAsCurrentNow) {
+							this.cueStartTimestamps[cueId] = Date.now()
+						}
+						if (status === 'stopped') {
+							delete this.cueStartTimestamps[cueId]
+						}
+						updateVariablesForCue(this, message.data, { setAsCurrentNow })
 						this.cuePlayStates[cueId] = status
-
-						// If status changed, check relevant feedbacks
-						// We check all types of feedbacks since a single cueId can only be in one state
 						if (oldStatus !== status) {
 							this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped')
 						}
+
+						// If the current cue stopped, switch to the most recently started remaining playing cue
+						if (status === 'stopped' && this.currentlyPlayingCueId === cueId) {
+							const playingIds = Object.keys(this.cuePlayStates).filter((id) => this.cuePlayStates[id] === 'playing')
+							let fallbackId = null
+							let latestTs = -1
+							for (const id of playingIds) {
+								const ts = this.cueStartTimestamps[id] || 0
+								if (ts > latestTs) {
+									latestTs = ts
+									fallbackId = id
+								}
+							}
+							if (fallbackId) {
+								this.currentlyPlayingCueId = fallbackId
+								const cue = this.cues.find((c) => c.id === fallbackId)
+								const currentlyPlayingPrefix = 'current_cue'
+								this.setVariableValues({
+									[`${currentlyPlayingPrefix}_name`]: (cue && cue.name) || fallbackId,
+									[`${currentlyPlayingPrefix}_status`]: 'playing',
+								})
+							}
+						}
+					} else {
+						updateVariablesForCue(this, message.data)
 					}
 				}
 			} catch (e) {
@@ -209,7 +215,7 @@ class SoundboardInstance extends InstanceBase {
 	}
 
 	initVariables() {
-		const { definitions, initialValues } = getVariableDefinitions() // Get defs and initial values
+		const { definitions, initialValues } = getVariableDefinitions() // Legacy initial set, ensures variables exist before first cue list
 		this.setVariableDefinitions(definitions)
 		this.setVariableValues(initialValues)
 	}

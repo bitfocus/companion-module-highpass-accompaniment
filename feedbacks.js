@@ -13,14 +13,26 @@ function getFeedbackDefinitions(self) {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Cue ID',
+					label: 'Cue Number (1-based)',
+					id: 'cueNumber',
+					default: '',
+					tooltip: 'Preferred. Maps to the current cue list.',
+				},
+				{
+					type: 'textinput',
+					label: 'Cue ID (legacy)',
 					id: 'cueId',
 					default: '',
-					tooltip: 'Enter the ID of the cue to monitor.',
 				},
 			],
 			callback: (feedback) => {
-				const cueId = feedback.options.cueId
+				let cueId = ''
+				const num = parseInt(feedback.options.cueNumber, 10)
+				if (!Number.isNaN(num) && num > 0 && self.cues && self.cues[num - 1]) {
+					cueId = self.cues[num - 1].id
+				} else if (feedback.options.cueId) {
+					cueId = feedback.options.cueId
+				}
 				return self.cuePlayStates[cueId] === 'playing'
 			},
 		},
@@ -35,13 +47,25 @@ function getFeedbackDefinitions(self) {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Cue ID',
+					label: 'Cue Number (1-based)',
+					id: 'cueNumber',
+					default: '',
+				},
+				{
+					type: 'textinput',
+					label: 'Cue ID (legacy)',
 					id: 'cueId',
 					default: '',
 				},
 			],
 			callback: (feedback) => {
-				const cueId = feedback.options.cueId
+				let cueId = ''
+				const num = parseInt(feedback.options.cueNumber, 10)
+				if (!Number.isNaN(num) && num > 0 && self.cues && self.cues[num - 1]) {
+					cueId = self.cues[num - 1].id
+				} else if (feedback.options.cueId) {
+					cueId = feedback.options.cueId
+				}
 				return self.cuePlayStates[cueId] === 'paused'
 			},
 		},
@@ -56,13 +80,25 @@ function getFeedbackDefinitions(self) {
 			options: [
 				{
 					type: 'textinput',
-					label: 'Cue ID',
+					label: 'Cue Number (1-based)',
+					id: 'cueNumber',
+					default: '',
+				},
+				{
+					type: 'textinput',
+					label: 'Cue ID (legacy)',
 					id: 'cueId',
 					default: '',
 				},
 			],
 			callback: (feedback) => {
-				const cueId = feedback.options.cueId
+				let cueId = ''
+				const num = parseInt(feedback.options.cueNumber, 10)
+				if (!Number.isNaN(num) && num > 0 && self.cues && self.cues[num - 1]) {
+					cueId = self.cues[num - 1].id
+				} else if (feedback.options.cueId) {
+					cueId = feedback.options.cueId
+				}
 				const status = self.cuePlayStates[cueId]
 				return status === 'stopped' || status === 'error' || !status
 			},
