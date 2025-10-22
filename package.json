@@ -1,6 +1,6 @@
 {
 	"name": "highpass-accompaniment",
-	"version": "1.1.0",
+	"version": "1.1.5",
 	"description": "Companion module for the AcCompaniment soundboard app",
 	"main": "main.js",
 	"scripts": {

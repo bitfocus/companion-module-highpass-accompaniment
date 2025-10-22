@@ -9,9 +9,9 @@ function getPresetDefinitions(self) {
 		presets.push({
 			type: 'button',
 			category: 'Sound Cues',
-			name: `Toggle Cue ${i}`,
+			name: `Cue ${i}`,
 			style: {
-				text: `TOGGLE\n$(instance:cue_${i}_name)`,
+				text: `$(instance:cue_${i}_name)`,
 				size: 'auto',
 				color: combineRgb(255, 255, 255),
 				bgcolor: combineRgb(0, 0, 0),
@@ -20,7 +20,7 @@ function getPresetDefinitions(self) {
 				{
 					down: [
 						{
-							actionId: `toggle_cue`,
+							actionId: `trigger_cue`,
 							options: { cueNumber: `${i}` },
 						},
 					],
@@ -64,6 +64,111 @@ function getPresetDefinitions(self) {
 						options: {},
 					},
 				],
+				up: [],
+			},
+		],
+		feedbacks: [],
+	})
+
+	presets.push({
+		type: 'button',
+		category: 'Controls',
+		name: 'Playlist Next',
+		style: {
+			text: 'NEXT',
+			size: 'auto',
+			color: combineRgb(255, 255, 255),
+			bgcolor: combineRgb(0, 100, 150),
+		},
+		steps: [
+			{
+				down: [
+					{
+						actionId: 'playlist_navigate_next',
+						options: { cueNumber: '1' },
+					},
+				],
+				up: [],
+			},
+		],
+		feedbacks: [],
+	})
+
+	presets.push({
+		type: 'button',
+		category: 'Controls',
+		name: 'Playlist Previous',
+		style: {
+			text: 'PREV',
+			size: 'auto',
+			color: combineRgb(255, 255, 255),
+			bgcolor: combineRgb(0, 100, 150),
+		},
+		steps: [
+			{
+				down: [
+					{
+						actionId: 'playlist_navigate_previous',
+						options: { cueNumber: '1' },
+					},
+				],
+				up: [],
+			},
+		],
+		feedbacks: [],
+	})
+
+	presets.push({
+		type: 'button',
+		category: 'Controls',
+		name: 'Current Time',
+		style: {
+			text: 'TIME\\n$(instance:current_cue_time_formatted)',
+			size: 'auto',
+			color: combineRgb(255, 255, 255),
+			bgcolor: combineRgb(50, 50, 50),
+		},
+		steps: [
+			{
+				down: [],
+				up: [],
+			},
+		],
+		feedbacks: [],
+	})
+
+	presets.push({
+		type: 'button',
+		category: 'Controls',
+		name: 'Duration',
+		style: {
+			text: 'DURATION\\n$(instance:current_cue_duration_formatted)',
+			size: 'auto',
+			color: combineRgb(255, 255, 255),
+			bgcolor: combineRgb(50, 50, 50),
+		},
+		steps: [
+			{
+				down: [],
+				up: [],
+			},
+		],
+		feedbacks: [],
+	})
+
+	presets.push({
+		type: 'button',
+		category: 'Controls',
+		name: 'Remaining Time',
+		style: {
+			text: 'REMAINING\\n$(instance:current_cue_remaining_formatted)',
+			size: 'auto',
+			color: combineRgb(255, 255, 255),
+			bgcolor: combineRgb(50, 50, 50),
+		},
+		steps: [
+			{
+				down: [],
 				up: [],
 			},
 		],

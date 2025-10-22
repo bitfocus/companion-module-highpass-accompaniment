@@ -117,16 +117,29 @@ class SoundboardInstance extends InstanceBase {
 							[`${currentlyPlayingPrefix}_remaining_sec`]: 0,
 						})
 					}
-				} else if (message.event === 'cueStatus') {
-					// This is somewhat deprecated by playbackTimeUpdate, but feedbacks might still use it.
-					// For variable purposes, playbackTimeUpdate is more comprehensive.
-					// const cueId = message.payload.cueId;
-					// const status = message.payload.status;
-					// this.cuePlayStates[cueId] = status; // Old way
-					// this.checkFeedbacks(...); // Old way based on cue_playing_status_cueId
-				} else if (message.type === 'playbackTimeUpdate' && message.data) {
+				} else if (message.event === 'cueStatus' && message.payload) {
+					// Handle legacy cueStatus events for feedback compatibility
+					const cueId = message.payload.cueId
+					const status = message.payload.status
+					if (cueId && status) {
+						const oldStatus = this.cuePlayStates[cueId]
+						this.cuePlayStates[cueId] = status
+						
+						// Update timestamps for play state tracking
+						if (status === 'playing' && oldStatus !== 'playing') {
+							this.cueStartTimestamps[cueId] = Date.now()
+						} else if (status === 'stopped') {
+							delete this.cueStartTimestamps[cueId]
+						}
+						
+						// Trigger feedback updates if status changed
+						if (oldStatus !== status) {
+							this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped')
+						}
+					}
+				} else if (message.event === 'playbackTimeUpdate' && message.payload) {
 					// Determine transitions and update current-cue semantics
-					const { cueId, status } = message.data
+					const { cueId, status } = message.payload
 					let oldStatus
 					if (cueId && status) {
 						oldStatus = this.cuePlayStates[cueId]
@@ -137,7 +150,7 @@ class SoundboardInstance extends InstanceBase {
 						if (status === 'stopped') {
 							delete this.cueStartTimestamps[cueId]
 						}
-						updateVariablesForCue(this, message.data, { setAsCurrentNow })
+						updateVariablesForCue(this, message.payload, { setAsCurrentNow })
 						this.cuePlayStates[cueId] = status
 						if (oldStatus !== status) {
 							this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped')
@@ -166,7 +179,7 @@ class SoundboardInstance extends InstanceBase {
 							}
 						}
 					} else {
-						updateVariablesForCue(this, message.data)
+						updateVariablesForCue(this, message.payload)
 					}
 				}
 			} catch (e) {
