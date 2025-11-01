@@ -75,19 +75,59 @@ function getActionDefinitions(self) {
 		},
 	}
 
-	actions['toggle_cue'] = {
-		name: 'Toggle Cue',
+	actions['trigger_cue'] = {
+		name: 'Trigger Cue',
 		options: [cueNumberOption],
 		callback: async (action) => {
 			const cueId = await resolveCueIdFromOptions(action.options)
 			if (!cueId) {
-				self.log('warn', 'Toggle Cue: Cue number out of range or invalid')
+				self.log('warn', 'Trigger Cue: Cue number out of range or invalid')
 				return
 			}
 			if (self.ws && self.ws.readyState === 1) {
 				self.ws.send(
 					JSON.stringify({
 						action: 'toggleCue',
+						payload: { cueId },
+					}),
+				)
+			}
+		},
+	}
+
+	actions['playlist_navigate_next'] = {
+		name: 'Playlist Navigate Next',
+		options: [cueNumberOption],
+		callback: async (action) => {
+			const cueId = await resolveCueIdFromOptions(action.options)
+			if (!cueId) {
+				self.log('warn', 'Playlist Navigate Next: Cue number out of range or invalid')
+				return
+			}
+			if (self.ws && self.ws.readyState === 1) {
+				self.ws.send(
+					JSON.stringify({
+						action: 'playlistNavigateNext',
+						payload: { cueId },
+					}),
+				)
+			}
+		},
+	}
+
+	actions['playlist_navigate_previous'] = {
+		name: 'Playlist Navigate Previous',
+		options: [cueNumberOption],
+		callback: async (action) => {
+			const cueId = await resolveCueIdFromOptions(action.options)
+			if (!cueId) {
+				self.log('warn', 'Playlist Navigate Previous: Cue number out of range or invalid')
+				return
+			}
+			if (self.ws && self.ws.readyState === 1) {
+				self.ws.send(
+					JSON.stringify({
+						action: 'playlistNavigatePrevious',
 						payload: { cueId },
 					}),
 				)
