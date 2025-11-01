@@ -42,6 +42,20 @@ function getPresetDefinitions(self) {
 						bgcolor: combineRgb(255, 165, 0),
 					},
 				},
+				{
+					feedbackId: 'cue_is_fading_in',
+					options: { cueNumber: `${i}` },
+					style: {
+						bgcolor: combineRgb(255, 165, 0), // Orange/amber for fading in
+					},
+				},
+				{
+					feedbackId: 'cue_is_fading_out',
+					options: { cueNumber: `${i}` },
+					style: {
+						bgcolor: combineRgb(255, 100, 0), // Darker orange/red for fading out
+					},
+				},
 			],
 		})
 	}

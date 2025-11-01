@@ -42,6 +42,22 @@ function getVariableDefinitions() {
 		variableId: `${currentlyPlayingPrefix}_remaining_sec`,
 		name: 'Currently Playing Remaining (s)',
 	})
+	variableDefinitions.push({
+		variableId: `${currentlyPlayingPrefix}_is_fading_in`,
+		name: 'Currently Playing Is Fading In',
+	})
+	variableDefinitions.push({
+		variableId: `${currentlyPlayingPrefix}_is_fading_out`,
+		name: 'Currently Playing Is Fading Out',
+	})
+	variableDefinitions.push({
+		variableId: `${currentlyPlayingPrefix}_fade_remaining_ms`,
+		name: 'Currently Playing Fade Remaining (ms)',
+	})
+	variableDefinitions.push({
+		variableId: `${currentlyPlayingPrefix}_fade_total_ms`,
+		name: 'Currently Playing Fade Total (ms)',
+	})
 
 	initialValues[`${currentlyPlayingPrefix}_name`] = 'N/A'
 	initialValues[`${currentlyPlayingPrefix}_status`] = 'stopped'
@@ -52,6 +68,10 @@ function getVariableDefinitions() {
 	initialValues[`${currentlyPlayingPrefix}_time_sec`] = 0
 	initialValues[`${currentlyPlayingPrefix}_duration_sec`] = 0
 	initialValues[`${currentlyPlayingPrefix}_remaining_sec`] = 0
+	initialValues[`${currentlyPlayingPrefix}_is_fading_in`] = false
+	initialValues[`${currentlyPlayingPrefix}_is_fading_out`] = false
+	initialValues[`${currentlyPlayingPrefix}_fade_remaining_ms`] = 0
+	initialValues[`${currentlyPlayingPrefix}_fade_total_ms`] = 0
 
 	// Individual Cue Variables (legacy fixed count)
 	for (let i = 1; i <= MAX_CUES_FOR_VARIABLES; i++) {
@@ -92,6 +112,22 @@ function getVariableDefinitions() {
 			variableId: `${prefix}_remaining_sec`,
 			name: `Cue ${i} Remaining (s)`,
 		})
+		variableDefinitions.push({
+			variableId: `${prefix}_is_fading_in`,
+			name: `Cue ${i} Is Fading In`,
+		})
+		variableDefinitions.push({
+			variableId: `${prefix}_is_fading_out`,
+			name: `Cue ${i} Is Fading Out`,
+		})
+		variableDefinitions.push({
+			variableId: `${prefix}_fade_remaining_ms`,
+			name: `Cue ${i} Fade Remaining (ms)`,
+		})
+		variableDefinitions.push({
+			variableId: `${prefix}_fade_total_ms`,
+			name: `Cue ${i} Fade Total (ms)`,
+		})
 
 		initialValues[`${prefix}_name`] = 'N/A'
 		initialValues[`${prefix}_status`] = 'stopped'
@@ -102,6 +138,10 @@ function getVariableDefinitions() {
 		initialValues[`${prefix}_time_sec`] = 0
 		initialValues[`${prefix}_duration_sec`] = 0
 		initialValues[`${prefix}_remaining_sec`] = 0
+		initialValues[`${prefix}_is_fading_in`] = false
+		initialValues[`${prefix}_is_fading_out`] = false
+		initialValues[`${prefix}_fade_remaining_ms`] = 0
+		initialValues[`${prefix}_fade_total_ms`] = 0
 	}
 	return { definitions: variableDefinitions, initialValues: initialValues }
 }
@@ -120,6 +160,10 @@ function getVariableDefinitionsDynamic(cuesLength) {
 	variableDefinitions.push({ variableId: `${currentlyPlayingPrefix}_time_sec`, name: 'Currently Playing Time (s)' })
 	variableDefinitions.push({ variableId: `${currentlyPlayingPrefix}_duration_sec`, name: 'Currently Playing Duration (s)' })
 	variableDefinitions.push({ variableId: `${currentlyPlayingPrefix}_remaining_sec`, name: 'Currently Playing Remaining (s)' })
+	variableDefinitions.push({ variableId: `${currentlyPlayingPrefix}_is_fading_in`, name: 'Currently Playing Is Fading In' })
+	variableDefinitions.push({ variableId: `${currentlyPlayingPrefix}_is_fading_out`, name: 'Currently Playing Is Fading Out' })
+	variableDefinitions.push({ variableId: `${currentlyPlayingPrefix}_fade_remaining_ms`, name: 'Currently Playing Fade Remaining (ms)' })
+	variableDefinitions.push({ variableId: `${currentlyPlayingPrefix}_fade_total_ms`, name: 'Currently Playing Fade Total (ms)' })
 
 	initialValues[`${currentlyPlayingPrefix}_name`] = 'N/A'
 	initialValues[`${currentlyPlayingPrefix}_status`] = 'stopped'
@@ -130,6 +174,10 @@ function getVariableDefinitionsDynamic(cuesLength) {
 	initialValues[`${currentlyPlayingPrefix}_time_sec`] = 0
 	initialValues[`${currentlyPlayingPrefix}_duration_sec`] = 0
 	initialValues[`${currentlyPlayingPrefix}_remaining_sec`] = 0
+	initialValues[`${currentlyPlayingPrefix}_is_fading_in`] = false
+	initialValues[`${currentlyPlayingPrefix}_is_fading_out`] = false
+	initialValues[`${currentlyPlayingPrefix}_fade_remaining_ms`] = 0
+	initialValues[`${currentlyPlayingPrefix}_fade_total_ms`] = 0
 
 	const count = Math.max(0, cuesLength || 0)
 	for (let i = 1; i <= count; i++) {
@@ -143,6 +191,10 @@ function getVariableDefinitionsDynamic(cuesLength) {
 		variableDefinitions.push({ variableId: `${prefix}_time_sec`, name: `Cue ${i} Time (s)` })
 		variableDefinitions.push({ variableId: `${prefix}_duration_sec`, name: `Cue ${i} Duration (s)` })
 		variableDefinitions.push({ variableId: `${prefix}_remaining_sec`, name: `Cue ${i} Remaining (s)` })
+		variableDefinitions.push({ variableId: `${prefix}_is_fading_in`, name: `Cue ${i} Is Fading In` })
+		variableDefinitions.push({ variableId: `${prefix}_is_fading_out`, name: `Cue ${i} Is Fading Out` })
+		variableDefinitions.push({ variableId: `${prefix}_fade_remaining_ms`, name: `Cue ${i} Fade Remaining (ms)` })
+		variableDefinitions.push({ variableId: `${prefix}_fade_total_ms`, name: `Cue ${i} Fade Total (ms)` })
 
 		initialValues[`${prefix}_name`] = 'N/A'
 		initialValues[`${prefix}_status`] = 'stopped'
@@ -153,6 +205,10 @@ function getVariableDefinitionsDynamic(cuesLength) {
 		initialValues[`${prefix}_time_sec`] = 0
 		initialValues[`${prefix}_duration_sec`] = 0
 		initialValues[`${prefix}_remaining_sec`] = 0
+		initialValues[`${prefix}_is_fading_in`] = false
+		initialValues[`${prefix}_is_fading_out`] = false
+		initialValues[`${prefix}_fade_remaining_ms`] = 0
+		initialValues[`${prefix}_fade_total_ms`] = 0
 	}
 
 	return { definitions: variableDefinitions, initialValues }
@@ -177,13 +233,18 @@ function updateVariablesForCue(self, cueData, options = {}) {
 		valuesToSet[`${prefix}_time_sec`] = cueData.currentTimeSec
 		valuesToSet[`${prefix}_duration_sec`] = cueData.totalDurationSec
 		valuesToSet[`${prefix}_remaining_sec`] = cueData.remainingTimeSec
+		// Fade-related fields
+		valuesToSet[`${prefix}_is_fading_in`] = cueData.isFadingIn || false
+		valuesToSet[`${prefix}_is_fading_out`] = cueData.isFadingOut || false
+		valuesToSet[`${prefix}_fade_remaining_ms`] = cueData.fadeTimeRemainingMs || 0
+		valuesToSet[`${prefix}_fade_total_ms`] = cueData.fadeTotalDurationMs || 0
 	}
 
 
 	// Update current_cue_* based on rules:
 	// - If explicitly instructed (transition to playing), switch current to this cue now
 	// - Else, only update current if this cue is already the current one
-	if (options.setAsCurrentNow === true && cueData.status === 'playing') {
+	if (options.setAsCurrentNow === true && (cueData.status === 'playing' || cueData.status === 'fading')) {
 		self.currentlyPlayingCueId = cueData.cueId
 		const currentlyPlayingPrefix = 'current_cue'
 		valuesToSet[`${currentlyPlayingPrefix}_name`] = cueData.cueName
@@ -195,8 +256,12 @@ function updateVariablesForCue(self, cueData, options = {}) {
 		valuesToSet[`${currentlyPlayingPrefix}_time_sec`] = cueData.currentTimeSec
 		valuesToSet[`${currentlyPlayingPrefix}_duration_sec`] = cueData.totalDurationSec
 		valuesToSet[`${currentlyPlayingPrefix}_remaining_sec`] = cueData.remainingTimeSec
+		valuesToSet[`${currentlyPlayingPrefix}_is_fading_in`] = cueData.isFadingIn || false
+		valuesToSet[`${currentlyPlayingPrefix}_is_fading_out`] = cueData.isFadingOut || false
+		valuesToSet[`${currentlyPlayingPrefix}_fade_remaining_ms`] = cueData.fadeTimeRemainingMs || 0
+		valuesToSet[`${currentlyPlayingPrefix}_fade_total_ms`] = cueData.fadeTotalDurationMs || 0
 	} else if (self.currentlyPlayingCueId === cueData.cueId) {
-		if (cueData.status === 'playing' || cueData.status === 'paused') {
+		if (cueData.status === 'playing' || cueData.status === 'paused' || cueData.status === 'fading') {
 			const currentlyPlayingPrefix = 'current_cue'
 			valuesToSet[`${currentlyPlayingPrefix}_name`] = cueData.cueName
 			valuesToSet[`${currentlyPlayingPrefix}_status`] = cueData.status
@@ -207,6 +272,10 @@ function updateVariablesForCue(self, cueData, options = {}) {
 			valuesToSet[`${currentlyPlayingPrefix}_time_sec`] = cueData.currentTimeSec
 			valuesToSet[`${currentlyPlayingPrefix}_duration_sec`] = cueData.totalDurationSec
 			valuesToSet[`${currentlyPlayingPrefix}_remaining_sec`] = cueData.remainingTimeSec
+			valuesToSet[`${currentlyPlayingPrefix}_is_fading_in`] = cueData.isFadingIn || false
+			valuesToSet[`${currentlyPlayingPrefix}_is_fading_out`] = cueData.isFadingOut || false
+			valuesToSet[`${currentlyPlayingPrefix}_fade_remaining_ms`] = cueData.fadeTimeRemainingMs || 0
+			valuesToSet[`${currentlyPlayingPrefix}_fade_total_ms`] = cueData.fadeTotalDurationMs || 0
 		} else if (cueData.status === 'stopped') {
 			self.currentlyPlayingCueId = null
 			const currentlyPlayingPrefix = 'current_cue'
@@ -219,6 +288,10 @@ function updateVariablesForCue(self, cueData, options = {}) {
 			valuesToSet[`${currentlyPlayingPrefix}_time_sec`] = 0
 			valuesToSet[`${currentlyPlayingPrefix}_duration_sec`] = 0
 			valuesToSet[`${currentlyPlayingPrefix}_remaining_sec`] = 0
+			valuesToSet[`${currentlyPlayingPrefix}_is_fading_in`] = false
+			valuesToSet[`${currentlyPlayingPrefix}_is_fading_out`] = false
+			valuesToSet[`${currentlyPlayingPrefix}_fade_remaining_ms`] = 0
+			valuesToSet[`${currentlyPlayingPrefix}_fade_total_ms`] = 0
 		}
 	} else if (cueData.status === 'stopped' && self.currentlyPlayingCueId === cueData.cueId) {
 		self.currentlyPlayingCueId = null
@@ -232,6 +305,10 @@ function updateVariablesForCue(self, cueData, options = {}) {
 		valuesToSet[`${currentlyPlayingPrefix}_time_sec`] = 0
 		valuesToSet[`${currentlyPlayingPrefix}_duration_sec`] = 0
 		valuesToSet[`${currentlyPlayingPrefix}_remaining_sec`] = 0
+		valuesToSet[`${currentlyPlayingPrefix}_is_fading_in`] = false
+		valuesToSet[`${currentlyPlayingPrefix}_is_fading_out`] = false
+		valuesToSet[`${currentlyPlayingPrefix}_fade_remaining_ms`] = 0
+		valuesToSet[`${currentlyPlayingPrefix}_fade_total_ms`] = 0
 	}
 
 	if (Object.keys(valuesToSet).length > 0) {

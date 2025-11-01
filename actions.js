@@ -135,6 +135,45 @@ function getActionDefinitions(self) {
 		},
 	}
 
+	actions['playlist_jump_to_item'] = {
+		name: 'Playlist Jump to Item',
+		options: [
+			cueNumberOption,
+			{
+				type: 'textinput',
+				id: 'targetIndex',
+				label: 'Item Index (0-based)',
+				default: '0',
+				tooltip: 'Zero-based index of the playlist item to jump to (first item is 0).',
+			},
+		],
+		callback: async (action) => {
+			const cueId = await resolveCueIdFromOptions(action.options)
+			if (!cueId) {
+				self.log('warn', 'Playlist Jump to Item: Cue number out of range or invalid')
+				return
+			}
+			const targetIndexRaw = action.options.targetIndex != null ? String(action.options.targetIndex) : '0'
+			const targetIndexParsed = self.parseVariablesInString ? await self.parseVariablesInString(targetIndexRaw) : targetIndexRaw
+			const targetIndex = parseInt(targetIndexParsed, 10)
+			if (Number.isNaN(targetIndex) || targetIndex < 0) {
+				self.log('warn', 'Playlist Jump to Item: Invalid target index')
+				return
+			}
+			if (self.ws && self.ws.readyState === 1) {
+				self.ws.send(
+					JSON.stringify({
+						action: 'playlistJumpToItem',
+						payload: {
+							cueId,
+							targetIndex,
+						},
+					}),
+				)
+			}
+		},
+	}
+
 	return actions
 }
 

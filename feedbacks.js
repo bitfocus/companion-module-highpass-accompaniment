@@ -79,6 +79,86 @@ function getFeedbackDefinitions(self) {
 				return status === 'stopped' || status === 'error' || !status
 			},
 		},
+		cue_is_fading: {
+			type: 'boolean',
+			name: 'Cue is Fading',
+			description: 'If the specified cue is currently fading in or fading out.',
+			defaultStyle: {
+				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(255, 165, 0), // Orange/amber for fading
+			},
+			options: [
+				{
+					type: 'textinput',
+					label: 'Cue Number (1-based)',
+					id: 'cueNumber',
+					default: '',
+					tooltip: 'Maps to the current cue list.',
+				},
+			],
+			callback: (feedback) => {
+				let cueId = ''
+				const num = parseInt(feedback.options.cueNumber, 10)
+				if (!Number.isNaN(num) && num > 0 && self.cues && self.cues[num - 1]) {
+					cueId = self.cues[num - 1].id
+				}
+				return self.cuePlayStates[cueId] === 'fading'
+			},
+		},
+		cue_is_fading_in: {
+			type: 'boolean',
+			name: 'Cue is Fading In',
+			description: 'If the specified cue is currently fading in.',
+			defaultStyle: {
+				color: combineRgb(0, 0, 0),
+				bgcolor: combineRgb(255, 165, 0), // Orange/amber for fading in
+			},
+			options: [
+				{
+					type: 'textinput',
+					label: 'Cue Number (1-based)',
+					id: 'cueNumber',
+					default: '',
+					tooltip: 'Maps to the current cue list.',
+				},
+			],
+			callback: (feedback) => {
+				let cueId = ''
+				const num = parseInt(feedback.options.cueNumber, 10)
+				if (!Number.isNaN(num) && num > 0 && self.cues && self.cues[num - 1]) {
+					cueId = self.cues[num - 1].id
+				}
+				const fadeState = self.cueFadeStates[cueId]
+				return self.cuePlayStates[cueId] === 'fading' && fadeState && fadeState.isFadingIn
+			},
+		},
+		cue_is_fading_out: {
+			type: 'boolean',
+			name: 'Cue is Fading Out',
+			description: 'If the specified cue is currently fading out.',
+			defaultStyle: {
+				color: combineRgb(255, 255, 255),
+				bgcolor: combineRgb(255, 100, 0), // Darker orange/red for fading out
+			},
+			options: [
+				{
+					type: 'textinput',
+					label: 'Cue Number (1-based)',
+					id: 'cueNumber',
+					default: '',
+					tooltip: 'Maps to the current cue list.',
+				},
+			],
+			callback: (feedback) => {
+				let cueId = ''
+				const num = parseInt(feedback.options.cueNumber, 10)
+				if (!Number.isNaN(num) && num > 0 && self.cues && self.cues[num - 1]) {
+					cueId = self.cues[num - 1].id
+				}
+				const fadeState = self.cueFadeStates[cueId]
+				return self.cuePlayStates[cueId] === 'fading' && fadeState && fadeState.isFadingOut
+			},
+		},
 	}
 }
 

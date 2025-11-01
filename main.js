@@ -13,8 +13,9 @@ class SoundboardInstance extends InstanceBase {
 		this.cues = [] // Store the cues received from the soundboard app
 		this.reconnectInterval = null
 		this.currentlyPlayingCueId = null // Track which cue is considered "currently playing"
-		this.cuePlayStates = {} // cueId: 'playing' | 'paused' | 'stopped'
+		this.cuePlayStates = {} // cueId: 'playing' | 'paused' | 'stopped' | 'fading'
 		this.cueStartTimestamps = {} // cueId: number (ms since epoch)
+		this.cueFadeStates = {} // cueId: { isFadingIn: boolean, isFadingOut: boolean }
 	}
 
 	async init(config) {
@@ -134,27 +135,72 @@ class SoundboardInstance extends InstanceBase {
 						
 						// Trigger feedback updates if status changed
 						if (oldStatus !== status) {
-							this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped')
+							if (status === 'stopped') {
+								delete this.cueFadeStates[cueId]
+							} else if (status === 'fading') {
+								this.cueFadeStates[cueId] = {
+									isFadingIn: message.payload.isFadingIn || false,
+									isFadingOut: message.payload.isFadingOut || false,
+								}
+							} else {
+								delete this.cueFadeStates[cueId]
+							}
+							this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped', 'cue_is_fading', 'cue_is_fading_in', 'cue_is_fading_out')
 						}
 					}
 				} else if (message.event === 'playbackTimeUpdate' && message.payload) {
 					// Determine transitions and update current-cue semantics
-					const { cueId, status } = message.payload
-					let oldStatus
-					if (cueId && status) {
-						oldStatus = this.cuePlayStates[cueId]
-						const setAsCurrentNow = status === 'playing' && oldStatus !== 'playing'
-						if (setAsCurrentNow) {
-							this.cueStartTimestamps[cueId] = Date.now()
-						}
-						if (status === 'stopped') {
-							delete this.cueStartTimestamps[cueId]
-						}
-						updateVariablesForCue(this, message.payload, { setAsCurrentNow })
-						this.cuePlayStates[cueId] = status
-						if (oldStatus !== status) {
-							this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped')
-						}
+						const { cueId, status } = message.payload
+						let oldStatus
+						if (cueId && status) {
+							oldStatus = this.cuePlayStates[cueId]
+							const oldFadeState = this.cueFadeStates[cueId]
+							const setAsCurrentNow = (status === 'playing' || status === 'fading') && oldStatus !== 'playing' && oldStatus !== 'fading'
+							if (setAsCurrentNow) {
+								this.cueStartTimestamps[cueId] = Date.now()
+							}
+							if (status === 'stopped') {
+								delete this.cueStartTimestamps[cueId]
+								delete this.cueFadeStates[cueId]
+								// Update state first so feedbacks evaluate correctly
+								this.cuePlayStates[cueId] = status
+								updateVariablesForCue(this, message.payload, { setAsCurrentNow })
+								// Clear fade feedbacks if it was fading before
+								if (oldStatus === 'fading') {
+									this.checkFeedbacks('cue_is_fading_in', 'cue_is_fading_out', 'cue_is_fading')
+								}
+								if (oldStatus !== status) {
+									this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped')
+								}
+							} else if (status === 'fading') {
+								// Store fade state for feedbacks
+								const newFadeState = {
+									isFadingIn: message.payload.isFadingIn || false,
+									isFadingOut: message.payload.isFadingOut || false,
+								}
+								this.cueFadeStates[cueId] = newFadeState
+								this.cuePlayStates[cueId] = status
+								updateVariablesForCue(this, message.payload, { setAsCurrentNow })
+								// Check if fade direction changed
+								const fadeDirectionChanged = !oldFadeState || 
+									oldFadeState.isFadingIn !== newFadeState.isFadingIn || 
+									oldFadeState.isFadingOut !== newFadeState.isFadingOut
+								if (oldStatus !== status) {
+									// Status changed to fading
+									this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped', 'cue_is_fading', 'cue_is_fading_in', 'cue_is_fading_out')
+								} else if (fadeDirectionChanged) {
+									// Fade direction changed while status remained fading
+									this.checkFeedbacks('cue_is_fading_in', 'cue_is_fading_out')
+								}
+							} else {
+								// Clear fade state when not fading
+								delete this.cueFadeStates[cueId]
+								this.cuePlayStates[cueId] = status
+								updateVariablesForCue(this, message.payload, { setAsCurrentNow })
+								if (oldStatus !== status) {
+									this.checkFeedbacks('cue_is_playing', 'cue_is_paused', 'cue_is_stopped', 'cue_is_fading', 'cue_is_fading_in', 'cue_is_fading_out')
+								}
+							}
 
 						// If the current cue stopped, switch to the most recently started remaining playing cue
 						if (status === 'stopped' && this.currentlyPlayingCueId === cueId) {
