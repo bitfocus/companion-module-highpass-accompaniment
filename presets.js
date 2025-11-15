@@ -20,7 +20,7 @@ function getPresetDefinitions(self) {
 				{
 					down: [
 						{
-							actionId: `trigger_cue`,
+							actionId: `toggle_cue`,
 							options: { cueNumber: `${i}` },
 						},
 					],

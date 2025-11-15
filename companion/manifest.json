@@ -3,7 +3,7 @@
 	"name": "accompaniment",
 	"shortname": "accompaniment",
 	"description": "Connects to the AcCompaniment app via a websocket server",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"license": "MIT",
 	"repository": "git+https://github.com/bitfocus/companion-module-highpass-accompaniment.git",
 	"bugs": "https://github.com/bitfocus/companion-module-highpass-accompaniment/issues",

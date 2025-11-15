@@ -75,7 +75,7 @@ function getActionDefinitions(self) {
 		},
 	}
 
-	actions['trigger_cue'] = {
+	actions['toggle_cue'] = {
 		name: 'Trigger Cue',
 		options: [cueNumberOption],
 		callback: async (action) => {
